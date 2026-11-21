@@ -5,8 +5,19 @@ import Anthropic from "@anthropic-ai/sdk";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 
-// Optional .env file (ANTHROPIC_API_KEY=...) next to this file.
-try { process.loadEnvFile?.(); } catch {}
+import fs from "node:fs";
+// .env next to this file wins over the shell, so a stale exported key can't override it.
+let KEY_SOURCE = process.env.ANTHROPIC_API_KEY ? "shell environment" : "none";
+try {
+  const envPath = path.join(path.dirname(fileURLToPath(import.meta.url)), ".env");
+  for (const line of fs.readFileSync(envPath, "utf8").split(/\r?\n/)) {
+    const m = line.match(/^\s*(?:export\s+)?([A-Z_][A-Z0-9_]*)\s*=\s*(.*)\s*$/);
+    if (!m) continue;
+    process.env[m[1]] = m[2].trim().replace(/^['"]|['"]$/g, "").trim();
+    if (m[1] === "ANTHROPIC_API_KEY") KEY_SOURCE = ".env file";
+  }
+} catch {}
+const API_KEY = String(process.env.ANTHROPIC_API_KEY || "").trim().replace(/^['"]|['"]$/g, "");
 
 const MODEL = process.env.MODEL || "claude-opus-5-5";
 const PORT = Number(process.env.PORT || 3000);
@@ -14,7 +25,7 @@ const SENDER = process.env.SENDER_NAME || "Malak";
 const SENDER_TITLE = process.env.SENDER_TITLE || "Partnerships, Booster";
 
 // Use the API key only, so a stray ANTHROPIC_AUTH_TOKEN or ANTHROPIC_BASE_URL in the shell can't hijack it.
-const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY, authToken: null, baseURL: "https://api.anthropic.com" });
+const client = new Anthropic({ apiKey: API_KEY, authToken: null, baseURL: "https://api.anthropic.com" });
 const app = express();
 const here = path.dirname(fileURLToPath(import.meta.url));
 app.use(express.static(path.join(here, "public")));
@@ -379,7 +390,7 @@ app.get("/api/run", async (req, res) => {
     send("done", { emailed: true });
   } catch (e) {
     console.error(e);
-    send("error", { message: e?.status === 401 ? "The API key was rejected. Check ANTHROPIC_API_KEY." : e?.message || "Something went wrong." });
+    send("error", { message: e?.status === 401 ? `The API key was rejected (${KEY_SOURCE}, ${API_KEY.slice(0, 10)}…, ${API_KEY.length} chars): ${e?.error?.error?.message || e.message}` : e?.message || "Something went wrong." });
   }
   res.end();
 });
@@ -414,7 +425,8 @@ Finish with ONLY a \`\`\`json fence containing an array: [{"name": "", "street":
 });
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  if (!process.env.ANTHROPIC_API_KEY) {
+  console.log(`API key from ${KEY_SOURCE}: ${API_KEY ? API_KEY.slice(0, 10) + "…" + API_KEY.slice(-4) + " (" + API_KEY.length + " chars)" : "missing"}`);
+  if (!API_KEY) {
     console.error("ANTHROPIC_API_KEY is not set. Put ANTHROPIC_API_KEY=sk-ant-... in a .env file here, or run: ANTHROPIC_API_KEY=sk-ant-... npm start");
     process.exit(1);
   }
