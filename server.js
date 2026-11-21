@@ -412,6 +412,31 @@ app.get("/api/run", async (req, res) => {
   res.end();
 });
 
+// Owner simulator: the boutique's own decision-maker reads the draft before you send it.
+app.post("/api/critique", express.json({ limit: "200kb" }), async (req, res) => {
+  try {
+    const { email = "", company = "", contact = "", summary = "" } = req.body || {};
+    const prompt = `Role-play the real recipient of this cold email: ${contact || "the Head of E-commerce"} at ${company}, a London fashion brand (${summary}).
+You get dozens of pitches a week. You protect the brand's image and your clients' experience. Read the email below honestly, as that person would.
+
+EMAIL:
+"""${String(email).slice(0, 6000)}"""
+
+Reply with ONLY a \`\`\`json fence:
+{"would_reply": "yes | maybe | no",
+ "first_impression": "one sentence, in the owner's voice",
+ "what_works": "one short point",
+ "what_puts_me_off": "one short point",
+ "question_i_would_ask": "the first question you'd ask Booster",
+ "one_fix": "one concrete edit that would make you more likely to reply"}`;
+    const msg = await streamOnce({ model: MODEL, max_tokens: 3000, output_config: { effort: "low" }, messages: [{ role: "user", content: prompt }] }, {});
+    res.json(parseJSON(msg.content.filter((b) => b.type === "text").map((b) => b.text).join("")));
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: e?.message || "Owner simulator failed." });
+  }
+});
+
 // Find: suggest boutiques in a postcode area, each with a source link.
 app.get("/api/find", async (req, res) => {
   const area = String(req.query.area || "W1").toUpperCase().slice(0, 4);

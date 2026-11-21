@@ -215,9 +215,11 @@ function renderEmail() {
     ${blocking.length
       ? `<div class="gate bad"><b>${blocking.length} sentence${blocking.length > 1 ? "s" : ""} can't ship.</b> Every claim needs a receipt. Remove ${blocking.length > 1 ? "them" : "it"} or rewrite before copying.</div>`
       : `<div class="gate ok"><b>Every claim has a receipt.</b>${confirms ? ` ${confirms} Booster detail${confirms > 1 ? "s" : ""} marked [CONFIRM] to check with the team.` : ""} Ready for your review.</div>`}
+    <div id="ownerOut"></div>
     <div class="btns">
       ${blocking.length ? '<button class="btn ghost" id="strip">Remove blocked sentences</button>' : ""}
       <button class="btn" id="copy" ${blocking.length ? "disabled" : ""}>Copy email</button>
+      <button class="btn ghost" id="owner">Read it as the owner</button>
       <span class="small" style="align-self:center">Copy, then send it yourself. It never sends by itself.</span>
     </div>`;
   document.querySelectorAll(".sent").forEach((el) => el.onclick = () => {
@@ -227,6 +229,24 @@ function renderEmail() {
     renderFacts(s.facts);
     if (s.facts.length) document.getElementById("fact-" + s.facts[0])?.scrollIntoView({ behavior: "smooth", block: "center" });
   });
+  $("owner").onclick = async () => {
+    const b = $("owner"); b.disabled = true; b.textContent = "The owner is reading…";
+    const text = `Subject: ${e.subject}\n\n` + e.sentences.map((s) => s.text).join(" ");
+    try {
+      const r = await fetch("/api/critique", { method: "POST", headers: { "content-type": "application/json" },
+        body: JSON.stringify({ email: text, company: state.profile?.company, contact: [state.profile?.contact?.name, state.profile?.contact?.title].filter(Boolean).join(", "), summary: state.profile?.summary }) });
+      const c = await r.json(); if (c.error) throw new Error(c.error);
+      const cls = c.would_reply === "yes" ? "ok" : c.would_reply === "no" ? "bad" : "warn";
+      $("ownerOut").innerHTML = `<div class="card" style="margin-top:14px;background:var(--bg)">
+        <div class="eyebrow">Owner simulator · ${esc(state.profile?.contact?.title || "the recipient")} reads your draft</div>
+        <p style="font-family:var(--display);font-style:italic;font-size:20px;margin:8px 0">"${esc(c.first_impression)}"</p>
+        <p style="margin:0 0 8px">Would reply: <span class="tag ${cls}">${esc(c.would_reply)}</span></p>
+        <dl><div><dt>What works</dt><dd>${esc(c.what_works)}</dd></div><div><dt>What puts me off</dt><dd>${esc(c.what_puts_me_off)}</dd></div>
+        <div><dt>First question I'd ask Booster</dt><dd>${esc(c.question_i_would_ask)}</dd></div><div><dt>One fix</dt><dd>${esc(c.one_fix)}</dd></div></dl></div>`;
+      b.textContent = "Read it again";
+    } catch (err) { $("ownerOut").innerHTML = `<div class="err" style="margin-top:12px">${esc(err.message)}</div>`; b.textContent = "Read it as the owner"; }
+    b.disabled = false;
+  };
   $("strip")?.addEventListener("click", () => { e.sentences = e.sentences.filter((s) => !blocking.includes(s)); renderEmail(); });
   $("copy")?.addEventListener("click", async () => {
     const text = `Subject: ${e.subject}\n\n` + e.sentences.map((s) => s.text + (s.kind === "greeting" || s.kind === "signoff" ? "\n\n" : " ")).join("").trim();
@@ -254,7 +274,7 @@ $("f").onsubmit = (ev) => {
   es.addEventListener("search", (m) => trail("s", JSON.parse(m.data).query));
   es.addEventListener("fetch", (m) => trail("f", JSON.parse(m.data).url));
   es.addEventListener("shopify", (m) => { const d = JSON.parse(m.data); trail("t", `Shopify: ${d.is_shopify === true ? "yes" : d.is_shopify === false ? "no" : "unknown"} (${d.signals.join("; ")})`); });
-  es.addEventListener("profile", (m) => { const d = JSON.parse(m.data); state.facts = d.profile.facts || []; renderProfile(d.profile, d.shopify); renderFacts(); });
+  es.addEventListener("profile", (m) => { const d = JSON.parse(m.data); state.facts = d.profile.facts || []; state.profile = d.profile; renderProfile(d.profile, d.shopify); renderFacts(); });
   es.addEventListener("email", (m) => { state.email = JSON.parse(m.data); renderEmail(); step("review"); });
   es.addEventListener("done", (m) => {
     const d = JSON.parse(m.data);
