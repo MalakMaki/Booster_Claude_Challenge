@@ -142,7 +142,7 @@ section{animation:rise .7s ease both}
     <input id="company" placeholder="Type any brand, e.g. Temperley London" autocomplete="off" aria-label="Company">
     <button class="btn" id="go">Research</button>
   </form>
-  <div class="chips">Try: <button type="button">Temperley London</button><button type="button">Wolf & Badger</button><button type="button">Self-Portrait</button><button type="button">Loaf</button></div>
+  <div class="chips">Try: <button type="button">Gucci</button><button type="button">Valentino</button><button type="button">Temperley London</button><button type="button">Self-Portrait</button><button type="button">Loaf</button></div>
 
   <div id="error"></div>
 
@@ -225,7 +225,7 @@ function renderProfile(p, shopify) {
     <p style="margin:0 0 10px">${esc(f.reason || "")}</p>
     <table>${(f.checks || []).map((k) => {
       const r = String(k.result).toLowerCase();
-      const icon = r === "yes" ? '<span class="yes">✓</span>' : r === "no" ? '<span class="no">✗</span>' : '<span class="unk">?</span>';
+      const icon = r === "yes" ? '<span class="yes">✓</span>' : r === "no" ? '<span class="no">✗</span>' : r === "custom" ? '<span class="unk">◐</span>' : '<span class="unk">?</span>';
       return `<tr><td>${icon}</td><td><b>${esc(k.criterion)}</b>${k.verified ? '<span class="tag code">checked by code</span>' : ""}<br><span class="small">${esc(k.evidence || "")}</span> ${link(k.source)}</td></tr>`;
     }).join("")}</table>`;
 }

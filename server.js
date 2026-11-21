@@ -38,7 +38,8 @@ const BOOSTER_PUBLIC = "Booster delivers online orders from the customer's neare
 const BOOSTER = `${BOOSTER_PUBLIC}
 Booster's ideal partner: a physical boutique in central London (postcode areas W1, SW1, WC, EC), premium or luxury, sells online on Shopify, products that fit in a bike bag (fashion, accessories, beauty, small goods).
 Not a fit: warehouse-only or marketplace-only sellers, brands with no London store, bulky goods (furniture, large homeware).
-Right contact: Head of E-commerce or Digital; the founder for smaller brands; Retail or Operations Director.`;
+Shopify is a strong plus (easy integration) but not required: big luxury maisons (e.g. Gucci, Chanel, Valentino) on custom platforms are still a fit if they have a central London boutique; for them, integration is a point to confirm with Booster.
+Right contact: Head of E-commerce or Digital; the founder for smaller brands; Retail or Operations Director. For global maisons, aim at the UK or EMEA level (UK Managing Director, UK/EMEA E-commerce or Client Experience Director, Retail Director, or the London flagship's Store Director), not the global CEO.`;
 
 // ---------- deterministic checks (no AI) ----------
 
@@ -376,8 +377,10 @@ app.get("/api/run", async (req, res) => {
     const checks = profile.fit?.checks || [];
     const shop = checks.find((c) => /shopify/i.test(c.criterion));
     if (shop && shopify?.is_shopify !== null && shopify) {
-      shop.result = shopify.is_shopify ? "yes" : "no";
-      shop.evidence = `Checked the website code directly: ${shopify.signals.join("; ")}`;
+      shop.result = shopify.is_shopify ? "yes" : "custom";
+      shop.evidence = shopify.is_shopify
+        ? `Checked the website code directly: ${shopify.signals.join("; ")}`
+        : `Checked the website code: no Shopify, so a custom platform. Still a fit; integration route is a [CONFIRM] with Booster.`;
       shop.source = shopify.checked_url;
       shop.verified = true;
     }
@@ -395,6 +398,7 @@ app.get("/api/run", async (req, res) => {
     profile.facts = facts;
     send("profile", { profile, shopify });
 
+    for (const c of checks) if (/shopify/i.test(c.criterion) && c.result === "no") c.result = "custom";
     const fails = checks.filter((c) => c.result === "no").length;
     if (/not a fit/i.test(profile.fit?.verdict || "") || fails >= 2) {
       send("status", { step: "email", message: "Not a fit, so no email. A good tool says no." });
