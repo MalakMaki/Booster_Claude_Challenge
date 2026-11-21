@@ -25,7 +25,11 @@ const SENDER = process.env.SENDER_NAME || "Malak";
 const SENDER_TITLE = process.env.SENDER_TITLE || "Partnerships, Booster";
 
 // Use the API key only, so a stray ANTHROPIC_AUTH_TOKEN or ANTHROPIC_BASE_URL in the shell can't hijack it.
-const client = new Anthropic({ apiKey: API_KEY, authToken: null, baseURL: "https://api.anthropic.com" });
+// Works with classic keys (sk-ant-api03, sent as x-api-key) and user-linked keys (sk-ant-usr, tried as a bearer token if x-api-key is refused).
+const asKey = new Anthropic({ apiKey: API_KEY, authToken: null, baseURL: "https://api.anthropic.com" });
+const asBearer = new Anthropic({ apiKey: null, authToken: API_KEY, baseURL: "https://api.anthropic.com" });
+let client = API_KEY.startsWith("sk-ant-usr") ? asBearer : asKey;
+let switched = false;
 const app = express();
 const here = path.dirname(fileURLToPath(import.meta.url));
 app.use(express.static(path.join(here, "public")));
@@ -192,16 +196,29 @@ async function streamOnce(params, on) {
     }
     return req.finalMessage();
   };
-  if (fallbacksOk) {
-    try {
-      return await run(true);
-    } catch (e) {
-      if (e?.status === 400 && /fallback|beta/i.test(String(e.message))) {
-        fallbacksOk = false;
-      } else throw e;
+  const attempt = async () => {
+    if (fallbacksOk) {
+      try {
+        return await run(true);
+      } catch (e) {
+        if (e?.status === 400 && /fallback|beta/i.test(String(e.message))) {
+          fallbacksOk = false;
+        } else throw e;
+      }
     }
+    return run(false);
+  };
+  try {
+    return await attempt();
+  } catch (e) {
+    if (e?.status === 401 && !switched) {
+      switched = true;
+      client = client === asKey ? asBearer : asKey;
+      console.log(`Key refused as ${client === asKey ? "bearer token" : "x-api-key"}; retrying the other way.`);
+      return attempt();
+    }
+    throw e;
   }
-  return run(false);
 }
 
 const SHOPIFY_TOOL = {
