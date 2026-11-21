@@ -5,12 +5,16 @@ import Anthropic from "@anthropic-ai/sdk";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 
+// Optional .env file (ANTHROPIC_API_KEY=...) next to this file.
+try { process.loadEnvFile?.(); } catch {}
+
 const MODEL = process.env.MODEL || "claude-opus-5-5";
 const PORT = Number(process.env.PORT || 3000);
 const SENDER = process.env.SENDER_NAME || "Malak";
 const SENDER_TITLE = process.env.SENDER_TITLE || "Partnerships, Booster";
 
-const client = new Anthropic(); // reads ANTHROPIC_API_KEY
+// Use the API key only, so a stray ANTHROPIC_AUTH_TOKEN or ANTHROPIC_BASE_URL in the shell can't hijack it.
+const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY, authToken: null, baseURL: "https://api.anthropic.com" });
 const app = express();
 const here = path.dirname(fileURLToPath(import.meta.url));
 app.use(express.static(path.join(here, "public")));
@@ -410,6 +414,9 @@ Finish with ONLY a \`\`\`json fence containing an array: [{"name": "", "street":
 });
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  if (!process.env.ANTHROPIC_API_KEY) console.warn("Warning: ANTHROPIC_API_KEY is not set.");
+  if (!process.env.ANTHROPIC_API_KEY) {
+    console.error("ANTHROPIC_API_KEY is not set. Put ANTHROPIC_API_KEY=sk-ant-... in a .env file here, or run: ANTHROPIC_API_KEY=sk-ant-... npm start");
+    process.exit(1);
+  }
   app.listen(PORT, () => console.log(`Booster Concierge running at http://localhost:${PORT}`));
 }
