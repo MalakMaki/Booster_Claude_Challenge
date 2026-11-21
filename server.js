@@ -236,7 +236,7 @@ const RESEARCH_PROMPT = (company) => `You are the research desk for Booster, a L
 ${BOOSTER}
 
 Research the company "${company}" using web search and web fetch. Work fast: about 4 to 6 searches and 2 to 3 page fetches.
-Find: what they sell and at what price point; their official website; every physical London store with its full address and postcode; how they sell online; one or two niche, recent or specific facts that would make an email feel personal (a new store, a collection, a collaboration, press coverage, founder story); and the best person to contact (name only if it is publicly listed, e.g. on the brand's site, press coverage or a public LinkedIn result, otherwise give the role).
+Find: what they sell and at what price point; their official website; every physical London store with its full address and postcode; how they sell online; one or two niche, recent or specific facts that would make an email feel personal (a new store, a collection, a collaboration, press coverage, founder story); and the best person to contact. Actively search for them by name: try searches like "${company} head of ecommerce", "${company} digital director", "${company} founder", "${company} linkedin". Recommend one named person with their title and the public page where you found them (company site, press article, public LinkedIn search result). Then collect the brand's published contact channels from their contact, press or stockist pages: press, wholesale or partnerships emails, store phone numbers, customer care. Only give an email or phone number exactly as it is published; never construct or guess one (no "firstname@brand.com" patterns).
 Then call check_shopify with their official website.
 
 Rules: public sources only. Every fact must carry the URL where you found it AND a verbatim quote copied exactly from that page (it will be checked by code against the live page, so copy it character for character; prefer pages you fetched). Aim for 5 to 8 facts, including the London store address(es). If you cannot source something, leave it out or mark it unknown. Never guess an email address.
@@ -252,7 +252,8 @@ Finish with ONLY a JSON object in a \`\`\`json fence, shaped exactly like this:
   "online": {"sells_online": true, "platform": "Shopify / other / unknown", "source": "url"},
   "facts": [{"fact": "short claim in your words", "quote": "the exact sentence or phrase copied word for word from the source page that proves it (10 to 30 words, no ellipses)", "source": "url"}],
   "hooks": [{"hook": "one specific, personal opening line idea", "fact_index": 0}],
-  "contact": {"name": "or null", "title": "", "why": "why this person", "found_at": "url or null"},
+  "contact": {"name": "real person's name", "title": "", "why": "why this person", "found_at": "url where the name and title appear", "linkedin": "public profile url or null", "email": "only if publicly listed, else null", "phone": "only if publicly listed, else null"},
+  "channels": [{"label": "e.g. Press office, Wholesale, Partnerships, Customer care, Bruton Street store", "value": "email address or phone number exactly as published", "source": "url"}],
   "alt_contacts": [{"name": "or null", "title": "", "found_at": "url or null"}],
   "fit": {
     "verdict": "good fit | possible | not a fit",

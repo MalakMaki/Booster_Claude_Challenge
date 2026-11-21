@@ -213,7 +213,9 @@ function renderProfile(p, shopify) {
       <div><dt>What and price point</dt><dd>${esc(p.category)} · ${esc(p.price_point)}</dd></div>
       <div><dt>Website</dt><dd>${link(p.website)}${shopify?.is_shopify ? '<span class="tag code">Shopify, verified in code</span>' : ""}</dd></div>
       <div><dt>London stores</dt><dd>${stores}</dd></div>
-      <div><dt>Who to contact</dt><dd><b>${esc(c.name || "Name not public")}</b>, ${esc(c.title || "")}<br><span class="small">${esc(c.why || "")}</span><br>${c.found_at ? "Found at " + link(c.found_at) : '<span class="small">No public source for a name, so the role is used</span>'}</dd></div>
+      <div><dt>Recommended contact</dt><dd><span style="font-family:var(--display);font-size:24px">${esc(c.name || "Name not public")}</span><br>${esc(c.title || "")}<br><span class="small">${esc(c.why || "")}</span><br>${c.found_at ? "Found at " + link(c.found_at) : '<span class="small">No public source for a name, so the role is used</span>'}
+        ${c.linkedin ? `<br>LinkedIn: ${link(c.linkedin)}` : ""}${c.email ? `<br>Email: <b>${esc(c.email)}</b>` : ""}${c.phone ? `<br>Phone: <b>${esc(c.phone)}</b>` : ""}</dd></div>
+      ${(p.channels || []).length ? `<div><dt>Published contact channels</dt><dd>${p.channels.map((ch) => `<div>${esc(ch.label)}: <b>${esc(ch.value)}</b> ${link(ch.source)}</div>`).join("")}<span class="small">Only details published by the brand. Nothing guessed.</span></dd></div>` : ""}
       ${(p.alt_contacts || []).length ? `<div><dt>Also</dt><dd>${p.alt_contacts.map((a) => `${esc(a.name || "")} ${esc(a.title)} ${link(a.found_at)}`).join("<br>")}</dd></div>` : ""}
     </dl>`;
   const f = p.fit || {};
