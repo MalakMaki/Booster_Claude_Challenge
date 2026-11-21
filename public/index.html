@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Booster Concierge</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..700;1,6..96,400..600&family=Manrope:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#EEF0EC; --surface:#FBFBF8; --ink:#16201B; --muted:#5D6A62; --line:#D5DBD4;
+  --accent:#17402F; --accent-ink:#F4F6F2; --gold:#A6823B; --chip:#E3E8E1;
+  --ok:#2F7A4E; --okbg:#E1EFE6; --warn:#9A6210; --warnbg:#F7ECD8; --bad:#A23B3B; --badbg:#F6E1E1;
+  --display:"Bodoni Moda",Didot,Georgia,serif; --body:"Manrope",system-ui,sans-serif; --mono:"IBM Plex Mono",ui-monospace,monospace;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 var(--body);padding:28px max(16px,4vw) 60px}
+.wrap{max-width:1240px;margin:0 auto;display:grid;gap:22px}
+h1,h2,h3{font-family:var(--display);font-weight:500;margin:0;letter-spacing:-.01em}
+.eyebrow{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);font-weight:700}
+a{color:var(--accent)}
+header{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:16px;border-bottom:1px solid var(--line);padding-bottom:18px}
+header h1{font-size:clamp(34px,5vw,52px);line-height:1}
+header h1 em{color:var(--gold)}
+header p{margin:6px 0 0;color:var(--muted);max-width:62ch}
+.steps{display:flex;gap:6px;flex-wrap:wrap}
+.steps span{font-size:12px;font-weight:700;padding:5px 11px;border-radius:999px;background:var(--chip);color:var(--muted)}
+.steps span.on{background:var(--accent);color:var(--accent-ink)}
+.steps span.done{background:var(--okbg);color:var(--ok)}
+form{display:flex;gap:10px;flex-wrap:wrap}
+input{flex:1;min-width:220px;font:inherit;font-size:18px;padding:14px 16px;border:1px solid var(--line);border-radius:4px;background:var(--surface)}
+button{font:inherit;cursor:pointer}
+.btn{background:var(--accent);color:var(--accent-ink);border:1px solid var(--accent);border-radius:4px;padding:12px 22px;font-weight:700}
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--line)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.chips{display:flex;gap:6px;flex-wrap:wrap;align-items:center;font-size:13px;color:var(--muted)}
+.chips button{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:4px 11px;font-size:13px}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);gap:22px;align-items:start}
+@media(max-width:900px){.grid{grid-template-columns:minmax(0,1fr)}}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:4px;padding:20px;min-width:0}
+.col{display:grid;gap:22px;min-width:0}
+.trail{font-family:var(--mono);font-size:12.5px;display:grid;gap:4px;max-height:230px;overflow:auto}
+.trail div{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.trail .s::before{content:"search  ";color:var(--gold)}
+.trail .f::before{content:"read    ";color:var(--accent)}
+.trail .t::before{content:"check   ";color:var(--ok)}
+.trail .m{color:var(--muted)}
+.pulse{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--gold);margin-right:8px;animation:p 1s infinite alternate}
+@keyframes p{to{opacity:.2}}
+.verdict{display:inline-block;font-family:var(--display);font-style:italic;font-size:22px;padding:2px 14px;border-radius:3px}
+.v-good{background:var(--okbg);color:var(--ok)} .v-maybe{background:var(--warnbg);color:var(--warn)} .v-no{background:var(--badbg);color:var(--bad)}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+td{padding:8px 6px;border-top:1px solid var(--line);vertical-align:top}
+td:first-child{width:28px;font-weight:700;text-align:center}
+.yes{color:var(--ok)} .no{color:var(--bad)} .unk{color:var(--warn)}
+.tag{display:inline-block;font-size:10.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:2px 7px;border-radius:999px;background:var(--chip);color:var(--muted);margin-left:6px;vertical-align:middle}
+.tag.code{background:var(--accent);color:var(--accent-ink)}
+.tag.ok{background:var(--okbg);color:var(--ok)} .tag.warn{background:var(--warnbg);color:var(--warn)} .tag.bad{background:var(--badbg);color:var(--bad)}
+dl{margin:0;display:grid;gap:10px} dt{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:700} dd{margin:2px 0 0}
+.facts{display:grid;gap:10px}
+.fact{border:1px solid var(--line);border-radius:4px;padding:10px 12px;font-size:13.5px}
+.fact.hl{outline:2px solid var(--gold)}
+.fact q{display:block;font-family:var(--display);font-style:italic;font-size:15px;margin:6px 0;color:var(--ink)}
+.fact .src{font-size:12px;overflow-wrap:anywhere}
+.letter{background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:24px 26px;font-size:15.5px;line-height:1.75}
+.letter .subj{font-weight:700;margin-bottom:14px}
+.sent{cursor:pointer;border-radius:2px;padding:1px 0;transition:background .15s}
+.sent.fact{border-bottom:2px solid var(--ok)}
+.sent.flag{border-bottom:2px solid var(--bad);background:var(--badbg)}
+.sent.unchecked{border-bottom:2px dashed var(--warn)}
+.sent:hover,.sent.sel{background:var(--chip)}
+.confirm{background:var(--warnbg);color:var(--warn);font-weight:700;padding:0 3px;border-radius:2px}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-top:10px}
+.legend b{display:inline-block;width:18px;height:3px;vertical-align:middle;margin-right:5px}
+.gate{margin-top:14px;padding:12px 14px;border-radius:4px;font-size:14px}
+.gate.ok{background:var(--okbg);color:var(--ok)} .gate.bad{background:var(--badbg);color:var(--bad)}
+.btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.err{background:var(--badbg);color:var(--bad);padding:12px 14px;border-radius:4px}
+.empty{color:var(--muted);font-style:italic}
+.small{font-size:12.5px;color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <div class="eyebrow">Booster · outreach for London's boutiques</div>
+      <h1>Booster <em>Concierge</em></h1>
+      <p>Type a brand. It researches the web live, checks the fit with code, finds the right person and writes the email. Every claim has a receipt, and nothing is ever sent by itself.</p>
+    </div>
+    <div class="steps" id="steps">
+      <span data-s="research">Research</span><span data-s="fit">Fit</span><span data-s="receipts">Receipts</span><span data-s="email">Email</span><span data-s="review">You review</span>
+    </div>
+  </header>
+
+  <form id="f">
+    <input id="company" placeholder="Type any brand, e.g. Temperley London" autocomplete="off" aria-label="Company">
+    <button class="btn" id="go">Research</button>
+  </form>
+  <div class="chips">Try: <button type="button">Temperley London</button><button type="button">Wolf & Badger</button><button type="button">Self-Portrait</button><button type="button">Loaf</button></div>
+
+  <div id="error"></div>
+
+  <div class="grid">
+    <div class="col">
+      <section class="card">
+        <div class="eyebrow" style="margin-bottom:10px">Live research trail</div>
+        <div class="trail" id="trail"><div class="m">Waiting for a brand.</div></div>
+      </section>
+      <section class="card" id="profile"><div class="eyebrow">Profile</div><p class="empty">A one-minute profile appears here.</p></section>
+      <section class="card" id="fit"><div class="eyebrow">Fit check</div><p class="empty">Booster's rules, checked one by one.</p></section>
+    </div>
+    <div class="col">
+      <section class="card">
+        <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:baseline">
+          <h3 style="font-size:26px">The email</h3><span class="small">Click any sentence to see its receipt</span>
+        </div>
+        <div id="email" style="margin-top:12px"><p class="empty">The draft appears here once the research is checked.</p></div>
+      </section>
+      <section class="card">
+        <div class="eyebrow" style="margin-bottom:10px">Receipts</div>
+        <div class="facts" id="facts"><p class="empty">Each fact, the exact quote behind it, and whether code found that quote on the live page.</p></div>
+      </section>
+    </div>
+  </div>
+</div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const link = (u) => (u && /^https?:/.test(u) ? `<a href="${esc(u)}" target="_blank" rel="noopener">${esc(u.replace(/^https?:\/\/(www\.)?/, "").slice(0, 60))}</a>` : "");
+let state = { facts: [], email: null };
+const ORDER = ["research", "fit", "receipts", "email", "review"];
+
+function step(s) {
+  const i = ORDER.indexOf(s);
+  document.querySelectorAll("#steps span").forEach((el) => {
+    const j = ORDER.indexOf(el.dataset.s);
+    el.className = j < i ? "done" : j === i ? "on" : "";
+  });
+}
+function trail(cls, text) {
+  const t = $("trail");
+  if (t.querySelector(".m:only-child")) t.innerHTML = "";
+  t.querySelector(".live")?.classList.remove("live");
+  const d = document.createElement("div");
+  d.className = cls;
+  d.textContent = text;
+  t.appendChild(d);
+  t.scrollTop = t.scrollHeight;
+}
+
+const RECEIPT = {
+  verified: ["ok", "Quote found on page"],
+  unreachable: ["warn", "Page blocks robots, check link"],
+  not_found: ["bad", "Quote not on page"],
+  missing: ["bad", "No quote"],
+};
+
+function renderProfile(p, shopify) {
+  const stores = (p.london_stores || []).map((s) =>
+    `<div>${esc(s.name || "")} ${esc(s.address || "")} <span class="tag ${s.central ? "ok" : "bad"}">${esc(s.outcode || "?")} ${s.central ? "in area" : "outside"}</span> ${link(s.source)}</div>`).join("") || '<span class="empty">No London store found</span>';
+  const c = p.contact || {};
+  $("profile").innerHTML = `<div class="eyebrow">Profile</div>
+    <h2 style="font-size:30px;margin:6px 0 8px">${esc(p.company)}</h2>
+    <p style="margin:0 0 14px">${esc(p.summary)}</p>
+    <dl>
+      <div><dt>What and price point</dt><dd>${esc(p.category)} · ${esc(p.price_point)}</dd></div>
+      <div><dt>Website</dt><dd>${link(p.website)}${shopify?.is_shopify ? '<span class="tag code">Shopify, verified in code</span>' : ""}</dd></div>
+      <div><dt>London stores</dt><dd>${stores}</dd></div>
+      <div><dt>Who to contact</dt><dd><b>${esc(c.name || "Name not public")}</b>, ${esc(c.title || "")}<br><span class="small">${esc(c.why || "")}</span><br>${c.found_at ? "Found at " + link(c.found_at) : '<span class="small">No public source for a name, so the role is used</span>'}</dd></div>
+      ${(p.alt_contacts || []).length ? `<div><dt>Also</dt><dd>${p.alt_contacts.map((a) => `${esc(a.name || "")} ${esc(a.title)} ${link(a.found_at)}`).join("<br>")}</dd></div>` : ""}
+    </dl>`;
+  const f = p.fit || {};
+  const cls = /not/i.test(f.verdict) ? "v-no" : /good/i.test(f.verdict) ? "v-good" : "v-maybe";
+  $("fit").innerHTML = `<div class="eyebrow">Fit check</div>
+    <div style="margin:8px 0 6px"><span class="verdict ${cls}">${esc(f.verdict || "unknown")}</span></div>
+    <p style="margin:0 0 10px">${esc(f.reason || "")}</p>
+    <table>${(f.checks || []).map((k) => {
+      const r = String(k.result).toLowerCase();
+      const icon = r === "yes" ? '<span class="yes">✓</span>' : r === "no" ? '<span class="no">✗</span>' : '<span class="unk">?</span>';
+      return `<tr><td>${icon}</td><td><b>${esc(k.criterion)}</b>${k.verified ? '<span class="tag code">checked by code</span>' : ""}<br><span class="small">${esc(k.evidence || "")}</span> ${link(k.source)}</td></tr>`;
+    }).join("")}</table>`;
+}
+
+function renderFacts(sel = []) {
+  $("facts").innerHTML = state.facts.map((f, i) => {
+    const [c, label] = RECEIPT[f.receipt?.status] || ["warn", "Unchecked"];
+    return `<div class="fact ${sel.includes(i) ? "hl" : ""}" id="fact-${i}"><b>[${i + 1}]</b> ${esc(f.fact)} <span class="tag ${c}">${label}</span>
+      ${f.quote ? `<q>${esc(f.quote)}</q>` : ""}<div class="src">${link(f.source)}</div></div>`;
+  }).join("") || '<p class="empty">No facts found.</p>';
+}
+
+function highlightConfirm(t) {
+  return esc(t).replace(/\[CONFIRM[^\]]*\]/g, (m) => `<span class="confirm" title="Ask Booster before sending">${m}</span>`);
+}
+const FLAG = { no_receipt: "Claim with no receipt", bad_receipt: "Receipt failed: quote not on the page", booster_unconfirmed: "Booster claim that isn't public, needs [CONFIRM]", unchecked: "Source couldn't be checked automatically" };
+
+function renderEmail() {
+  const e = state.email;
+  if (!e) return;
+  const blocking = e.sentences.filter((s) => ["no_receipt", "bad_receipt", "booster_unconfirmed"].includes(s.check));
+  const confirms = e.sentences.filter((s) => /\[CONFIRM/i.test(s.text)).length;
+  const body = e.sentences.map((s, i) => {
+    let cls = "sent";
+    if (blocking.includes(s)) cls += " flag";
+    else if (s.check === "unchecked") cls += " unchecked";
+    else if (s.kind === "fact") cls += " fact";
+    const br = s.kind === "greeting" || s.kind === "signoff" ? "<br><br>" : " ";
+    const pre = s.kind === "signoff" ? "<br>" : "";
+    return `${pre}<span class="${cls}" data-i="${i}" title="${esc(FLAG[s.check] || (s.kind === "fact" ? "Backed by receipt " + s.facts.map((x) => x + 1).join(", ") : s.kind))}">${highlightConfirm(s.text)}</span>${br}`;
+  }).join("");
+  $("email").innerHTML = `<div class="letter"><div class="subj">Subject: ${esc(e.subject)}</div><div id="body">${body}</div></div>
+    <div class="legend"><span><b style="background:var(--ok)"></b>Claim with a verified receipt</span><span><b style="background:var(--warn)"></b>Source not machine-checkable</span><span><b style="background:var(--bad)"></b>Blocked: no receipt</span><span><span class="confirm">[CONFIRM]</span> Ask Booster</span></div>
+    ${blocking.length
+      ? `<div class="gate bad"><b>${blocking.length} sentence${blocking.length > 1 ? "s" : ""} can't ship.</b> Every claim needs a receipt. Remove ${blocking.length > 1 ? "them" : "it"} or rewrite before copying.</div>`
+      : `<div class="gate ok"><b>Every claim has a receipt.</b>${confirms ? ` ${confirms} Booster detail${confirms > 1 ? "s" : ""} marked [CONFIRM] to check with the team.` : ""} Ready for your review.</div>`}
+    <div class="btns">
+      ${blocking.length ? '<button class="btn ghost" id="strip">Remove blocked sentences</button>' : ""}
+      <button class="btn" id="copy" ${blocking.length ? "disabled" : ""}>Copy email</button>
+      <span class="small" style="align-self:center">Copy, then send it yourself. It never sends by itself.</span>
+    </div>`;
+  document.querySelectorAll(".sent").forEach((el) => el.onclick = () => {
+    document.querySelectorAll(".sent.sel").forEach((x) => x.classList.remove("sel"));
+    el.classList.add("sel");
+    const s = e.sentences[+el.dataset.i];
+    renderFacts(s.facts);
+    if (s.facts.length) document.getElementById("fact-" + s.facts[0])?.scrollIntoView({ behavior: "smooth", block: "center" });
+  });
+  $("strip")?.addEventListener("click", () => { e.sentences = e.sentences.filter((s) => !blocking.includes(s)); renderEmail(); });
+  $("copy")?.addEventListener("click", async () => {
+    const text = `Subject: ${e.subject}\n\n` + e.sentences.map((s) => s.text + (s.kind === "greeting" || s.kind === "signoff" ? "\n\n" : " ")).join("").trim();
+    try { await navigator.clipboard.writeText(text); $("copy").textContent = "Copied"; } catch { $("copy").textContent = "Select the text to copy"; }
+  });
+}
+
+let es;
+$("f").onsubmit = (ev) => {
+  ev.preventDefault();
+  const company = $("company").value.trim();
+  if (!company) return;
+  es?.close();
+  state = { facts: [], email: null };
+  $("error").innerHTML = "";
+  $("trail").innerHTML = "";
+  $("email").innerHTML = '<p class="empty"><span class="pulse"></span>Waiting for checked research…</p>';
+  $("facts").innerHTML = '<p class="empty">Collecting sources…</p>';
+  $("profile").innerHTML = '<div class="eyebrow">Profile</div><p class="empty"><span class="pulse"></span>Researching…</p>';
+  $("fit").innerHTML = '<div class="eyebrow">Fit check</div><p class="empty">Waiting for research…</p>';
+  $("go").disabled = true;
+  step("research");
+  es = new EventSource("/api/run?company=" + encodeURIComponent(company));
+  es.addEventListener("status", (m) => { const d = JSON.parse(m.data); if (d.step && d.step !== "summary") step(d.step); trail("m", d.message); });
+  es.addEventListener("search", (m) => trail("s", JSON.parse(m.data).query));
+  es.addEventListener("fetch", (m) => trail("f", JSON.parse(m.data).url));
+  es.addEventListener("shopify", (m) => { const d = JSON.parse(m.data); trail("t", `Shopify: ${d.is_shopify === true ? "yes" : d.is_shopify === false ? "no" : "unknown"} (${d.signals.join("; ")})`); });
+  es.addEventListener("profile", (m) => { const d = JSON.parse(m.data); state.facts = d.profile.facts || []; renderProfile(d.profile, d.shopify); renderFacts(); });
+  es.addEventListener("email", (m) => { state.email = JSON.parse(m.data); renderEmail(); step("review"); });
+  es.addEventListener("done", (m) => {
+    const d = JSON.parse(m.data);
+    if (!d.emailed) { $("email").innerHTML = '<div class="gate bad"><b>No email.</b> This brand doesn\'t fit Booster, so the tool says no. See the fit check for why.</div>'; step("review"); }
+    trail("m", "Done.");
+    $("go").disabled = false; es.close();
+  });
+  es.addEventListener("error", (m) => {
+    if (m.data) { $("error").innerHTML = `<div class="err">${esc(JSON.parse(m.data).message)}</div>`; }
+    else if (es.readyState !== EventSource.CLOSED) { $("error").innerHTML = '<div class="err">Lost the connection to the server.</div>'; }
+    $("go").disabled = false; es.close();
+  });
+};
+document.querySelectorAll(".chips button").forEach((b) => b.onclick = () => { $("company").value = b.textContent; $("f").requestSubmit(); });
+</script>
+</body>
+</html>
